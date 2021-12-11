@@ -2,12 +2,11 @@ import {Client, Collection, Message, TextChannel} from "discord.js";
 import dotenv from "dotenv";
 import {readdir} from "fs";
 import config from "./config";
-
 export interface runEvent {
     message: Message,
     client: Client,
     args: string[],
-    dev: boolean
+    dev: boolean,
 }
 
 dotenv.config();
