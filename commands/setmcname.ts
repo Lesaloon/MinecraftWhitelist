@@ -77,12 +77,9 @@ export async function run(e:runEvent) {
                 socket.resume();
             } )
 
-            console.log("closing DB");
             done(db)
             return
-        } else {
-            console.log("going further");
-            
+        } else {            
             Players.findOneAndUpdate({DiscordID: e.message.author.id}, { $set: { McName: e.args[0], uuid: javaHash("OfflinePlayer:"+e.args[0])  } }).then( async (data: any) => {
                 e.message.reply("Ton profil a été mis a jours " + e.args[0] + " tu devrait donc être whitelist")
                 
