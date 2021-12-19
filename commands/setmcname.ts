@@ -1,14 +1,12 @@
 import {runEvent} from "../index";
 const jsftp = require("jsftp");
 import { Rcon } from "rcon-client"
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 type WhitelistJsonFormat = {
     name: string,
     uuid: string
 }
-
-
 function javaHash(input:string) { // this function saved my fuking life HAAAAAAAA
     // *releaved ougabunga*
     let md5Bytes = crypto.createHash('md5').update(input).digest();
@@ -24,10 +22,8 @@ function javaHash(input:string) { // this function saved my fuking life HAAAAAAA
         uuid.substr(16, 4),
         uuid.substr(20)
     ]
-    console.log({uuid, arr});
     return arr.join("-")
 }
-
 export async function run(e:runEvent) {
    
     if (e.args[0] != "")  {
@@ -42,13 +38,52 @@ export async function run(e:runEvent) {
             done(db)
             return
         }
-        console.log(playa)
-        if (!playa) {
-            Players.insert({DiscordID: e.message.author.id, McName: e.args[0], faction: "Nomade", whitelisted: false, UUID: null })
-            e.message.reply("Ton profil a été crée " + e.args[0] +" pour te faire whiteliste tape !whitelist quand tu sera prêt a jouer")
+        console.log({playa})
+        if (playa != []) {
+            await Players.insert({DiscordID: e.message.author.id, McName: e.args[0], faction: "Nomade", uuid: javaHash("OfflinePlayer:"+e.args[0]) })
+            e.message.reply("Ton profil a été crée " + e.args[0] +" tu devrait être whitelist ")
+            const Ftp = new jsftp({
+                host: "178.33.252.159",
+                port: 21, // defaults to 21
+                user: process.env.FTPUsr ?? "user", // defaults to "anonymous"
+                pass: process.env.FTPPass ?? "1234" // defaults to "@anonymous"
+              });
+            let jsonWhitelist:Array<WhitelistJsonFormat>
+            Ftp.get("whitelist.json", async (err:any, socket:any) => {
+                if (err) {
+                  return;
+                }
+              
+                socket.on("data", async (d:string) => {
+                    jsonWhitelist = JSON.parse(d)
+                    console.log({newname: e.args[0]})
+
+                    let newuuid = javaHash("OfflinePlayer:"+e.args[0])
+                    
+                    jsonWhitelist.push( {name: e.args[0], uuid:newuuid })
+                    Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist), 'utf8'), "whitelist.json" )
+                    
+                    const rcon = await Rcon.connect({
+                        host: "178.33.252.159", port: 27036, password: process.env.RconPass ?? "password"
+                    })
+                         
+                    let responses = rcon.send("whitelist reload")
+                        
+                    console.log(responses)
+        
+                    rcon.end()
+                });
+              
+                socket.resume();
+            } )
+
+            console.log("closing DB");
             done(db)
+            return
         } else {
-            Players.findOneAndUpdate({DiscordID: e.message.author.id}, { $set: { McName: e.args[0], whitelisted: false  } }).then( async (data: any) => {
+            console.log("going further");
+            
+            Players.findOneAndUpdate({DiscordID: e.message.author.id}, { $set: { McName: e.args[0], uuid: javaHash("OfflinePlayer:"+e.args[0])  } }).then( async (data: any) => {
                 e.message.reply("Ton profil a été mis a jours " + e.args[0] + " tu devrait donc être whitelist")
                 
                 const Ftp = new jsftp({
@@ -86,14 +121,9 @@ export async function run(e:runEvent) {
                   
                     socket.resume();
                 } )
-                
-
                 done(db)
             } )
         }
-        
-
-        
     }
 }
 
