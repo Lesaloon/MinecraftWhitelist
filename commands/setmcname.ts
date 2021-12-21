@@ -7,6 +7,7 @@ type WhitelistJsonFormat = {
     name: string,
     uuid: string
 }
+
 function javaHash(input:string) { // this function saved my fuking life HAAAAAAAA
     // *releaved ougabunga*
     let md5Bytes = crypto.createHash('md5').update(input).digest();
@@ -39,7 +40,7 @@ export async function run(e:runEvent) {
             return
         }
         console.log({playa})
-        if (playa != []) {
+        if (playa.length == 0) {
             await Players.insert({DiscordID: e.message.author.id, McName: e.args[0], faction: "Nomade", uuid: javaHash("OfflinePlayer:"+e.args[0]) })
             e.message.reply("Ton profil a été crée " + e.args[0] +" tu devrait être whitelist ")
             const Ftp = new jsftp({
@@ -56,7 +57,7 @@ export async function run(e:runEvent) {
               
                 socket.on("data", async (d:string) => {
                     jsonWhitelist = JSON.parse(d)
-                    console.log({newname: e.args[0]})
+                    //console.log({newname: e.args[0]})
 
                     let newuuid = javaHash("OfflinePlayer:"+e.args[0])
                     
@@ -66,18 +67,18 @@ export async function run(e:runEvent) {
                     const rcon = await Rcon.connect({
                         host: "178.33.252.159", port: 27036, password: process.env.RconPass ?? "password"
                     })
-                         
+                        
                     let responses = rcon.send("whitelist reload")
                         
                     console.log(responses)
-        
+
                     rcon.end()
+                    done(db)
                 });
               
                 socket.resume();
-            } )
-
-            done(db)
+            })
+            
             return
         } else {            
             Players.findOneAndUpdate({DiscordID: e.message.author.id}, { $set: { McName: e.args[0], uuid: javaHash("OfflinePlayer:"+e.args[0])  } }).then( async (data: any) => {
@@ -90,19 +91,28 @@ export async function run(e:runEvent) {
                     pass: process.env.FTPPass ?? "1234" // defaults to "@anonymous"
                   });
                 let jsonWhitelist:Array<WhitelistJsonFormat>
+                let dataString = ""
                 Ftp.get("whitelist.json", async (err:any, socket:any) => {
                     if (err) {
                       return;
                     }
                   
                     socket.on("data", async (d:string) => {
-                        jsonWhitelist = JSON.parse(d)
+                        dataString += d
+                    });
+                  
+                    socket.resume();
+
+                    socket.on("close", async () => {
+                        jsonWhitelist = JSON.parse(dataString)
+                        console.log({jsonWhitelist, playa});
+                        
                         const oldname = playa[0].McName
                         console.log({oldname, newname: e.args[0]})
                         jsonWhitelist = jsonWhitelist.filter((item:WhitelistJsonFormat) => item.name !== playa[0].McName);
                         let newuuid = javaHash("OfflinePlayer:"+e.args[0])
                         
-                        jsonWhitelist.push( {name: e.args[0], uuid:newuuid })
+                        jsonWhitelist.push( {uuid:newuuid, name: e.args[0] })
                         Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist), 'utf8'), "whitelist.json" )
                         
                         const rcon = await Rcon.connect({
@@ -114,9 +124,7 @@ export async function run(e:runEvent) {
                         console.log(responses)
             
                         rcon.end()
-                    });
-                  
-                    socket.resume();
+                    })
                 } )
                 done(db)
             } )

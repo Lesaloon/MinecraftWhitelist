@@ -11,9 +11,8 @@ export async function run(e:runEvent) {
         e.message.reply("Le joueur chercher n'est pas dans notre basse de donner ")
         return
     }
-    console.log(e.message.mentions.users.first().username)
     const MsgEmbed = new RichEmbed()
-        .setTitle( "information sur : ")
+        .setTitle( "information sur : " + e.message.mentions.users.first().username)
         .addField( "IGN :", playa[0].McName)
         .addField( "Faction :", playa[0].faction)
         .addField( "UUID ( unique au serveur ) :",  playa[0].uuid)
