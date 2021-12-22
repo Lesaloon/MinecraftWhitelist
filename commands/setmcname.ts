@@ -25,6 +25,7 @@ function javaHash(input:string) { // this function saved my fuking life HAAAAAAA
     ]
     return arr.join("-")
 }
+
 export async function run(e:runEvent) {
    
     if (e.args[0] != "")  {
@@ -113,13 +114,13 @@ export async function run(e:runEvent) {
                         let newuuid = javaHash("OfflinePlayer:"+e.args[0])
                         
                         jsonWhitelist.push( {uuid:newuuid, name: e.args[0] })
-                        Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist), 'utf8'), "whitelist.json" )
+                        await Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist), 'utf8'), "whitelist.json" )
                         
                         const rcon = await Rcon.connect({
                             host: "178.33.252.159", port: 27036, password: process.env.RconPass ?? "password"
                         })
                              
-                        let responses = rcon.send("whitelist reload")
+                        const responses = rcon.send("whitelist reload")
                             
                         console.log(responses)
             

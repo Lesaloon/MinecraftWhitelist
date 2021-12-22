@@ -52,10 +52,16 @@ export async function run(e:runEvent) {
                 sum += data.stats["minecraft:mined"][key];
               }
             const DataBroken = sum
+            sum = 0
+            for (const key in data.stats["minecraft:place"]) {
+                sum += data.stats["minecraft:place"][key];
+              }
+            const DataPlaced = sum
             const MsgEmbed = new RichEmbed()
             .setTitle("Stats sur : " + playa[0].McName )
             .addField( "Nombre de mort : ", DataDeath)
             .addField( "Nombre de blocs casser : ", DataBroken)
+            .addField( "Nombre de blocs casser : ", DataPlaced)
             .setTimestamp()
 
             e.message.channel.send(MsgEmbed)
