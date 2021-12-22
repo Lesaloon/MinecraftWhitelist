@@ -2,11 +2,11 @@
   "name": "discord.js-typescript-template",
   "version": "0.0.1",
   "description": "A template for Discord.JS with Typescript and a command handler.",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "NODE_ENV=dev ts-node .",
-    "start": "NODE_ENV=production node ."
+    "start": "NODE_ENV=production ts-node ."
   },
   "repository": {
     "type": "git",
