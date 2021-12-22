@@ -46,10 +46,16 @@ export async function run(e:runEvent) {
             //console.log(data);
 
             //console.log( data.stats["minecraft:custom"]["minecraft:deaths"] || "0");
-            
+            const DataDeath = data.stats["minecraft:custom"]["minecraft:deaths"] || "0"
+            let sum = 0
+            for (const key in data.stats["minecraft:mined"]) {
+                sum += data.stats["minecraft:mined"][key];
+              }
+            const DataBroken = sum
             const MsgEmbed = new RichEmbed()
             .setTitle("Stats sur : " + playa[0].McName )
-            .addField( "Nombre de mort : ", data.stats["minecraft:custom"]["minecraft:deaths"] || "0")
+            .addField( "Nombre de mort : ", DataDeath)
+            .addField( "Nombre de blocs casser : ", DataBroken)
             .setTimestamp()
 
             e.message.channel.send(MsgEmbed)
