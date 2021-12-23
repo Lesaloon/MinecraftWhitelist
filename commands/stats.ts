@@ -61,7 +61,7 @@ export async function run(e:runEvent) {
             .setTitle("Stats sur : " + playa[0].McName )
             .addField( "Nombre de mort : ", DataDeath)
             .addField( "Nombre de blocs casser : ", DataBroken)
-            .addField( "Nombre de blocs casser : ", DataPlaced)
+            .addField( "Nombre de blocs placer : ", DataPlaced)
             .setTimestamp()
 
             e.message.channel.send(MsgEmbed)

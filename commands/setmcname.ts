@@ -63,7 +63,7 @@ export async function run(e:runEvent) {
                     let newuuid = javaHash("OfflinePlayer:"+e.args[0])
                     
                     jsonWhitelist.push( {name: e.args[0], uuid:newuuid })
-                    Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist), 'utf8'), "whitelist.json" )
+                    Ftp.put(Buffer.from(JSON.stringify(jsonWhitelist, null, 4), 'utf8'), "whitelist.json" )
                     
                     const rcon = await Rcon.connect({
                         host: "178.33.252.159", port: 27036, password: process.env.RconPass ?? "password"
